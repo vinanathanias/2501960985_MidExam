@@ -1,0 +1,211 @@
+---
+title: '[2501960985]_MidExam'
+author: "Vina Nathania Santiko"
+date: "April 25, 2022"
+output: html_document
+---
+
+**Video Link: 'https://binusianorg-my.sharepoint.com/personal/vina_santiko_binus_ac_id/_layouts/15/guestaccess.aspx?guestaccesstoken=GKsVS1OC8UOVsW5s3iOtNdmPs4Qdcx8sxLmH6eAw4sY%3d&docid=2_09a7bc56d57834757bf0c9f887b2b52b2&rev=1'**
+
+
+##### **1. Apply the following exploratory data analysis techniques using R on CarPrice dataset: (25 pts.)**
+
+a. Using mfrow parameter, construct a two-by-two plot array showing the concentrations of the following four attributes versus the record number in the dataset: 
+
+(1) carlength, top left; 
+(2) carwidth, top right; 
+(3) doornumber, lower left; and 
+(4) enginetype, lower right. 
+
+In all cases, the x-axis label should read Record number in dataset and the y-axis should read the attribute. Each plot should have a title spelling out the name of the element on which the attribute is based (e.g., “carlength” for the top-left plot).
+
+
+```{r}
+#write your code here
+path <- "C:/Users/USER/Downloads/CarPrice-OddSID2.csv" 
+carData <- read.csv(path)
+print(carData)
+dim(carData)
+str(carData)
+
+par(mfrow=c(2,2))
+
+plot(carData$car_ID, carData$carlength, main = "carlength", xlab = "Car ID", ylab = "length")
+plot(carData$car_ID, carData$carwidth, main = "carwidth", xlab = "Car ID", ylab = "width")
+plot(carData$doornumber, main = "doornumber", las = 1, horiz = "True")
+plot(carData$enginetype, main = "enginetype", horiz = "True", las = 1, cex.names = 0.8)
+
+
+```
+
+
+__Write your explanation here:__
+pada data frame carPrice, terdapat 205 baris dan 13 kolom yang artinya terdapat 13 variabel dengan 205 data. dari 13 variabel ini, terdapat 3 tipe variabel yaitu 5 integer, 5 variabel factor, dan 3 variabel numerik. 
+
+pada plot diatas, bagian kiri atas menunjukkan panjang mobil yang terdaftar pada data. pada kanan atas, menunjukan lebar mobil yang terdaftar pada data. kemudian, pada kiri bawah menunjukan bahwa mobil dengan 4 pintu lebih dominan dari pada mobil dengan 2 pintu. dan pada kanan bawah menunjukan bahwa enginetype ohc mendominasi pada data set carPrise.
+
+
+
+b. Construct a mosaic plot showing the relationship between the variables FuelSystem and DriveWheel in the CarPrice data frame. Does this plot suggest a relationship between these variables? Explain your answer.
+
+```{r}
+#write your code here
+mosaicplot(table(carData$fuelsystem, carData$drivewheel), main = "FuelSystem Vs DriveWheel", off =25, color = c("navy", "light gray", "maroon"))
+
+```
+
+__Write your explanation here:__
+
+dari 3 jenis drivewheel, jenis drive wheel yang paling banyak adalah jenis drivewheel fwd (front drive wheel). kemudian, untuk variabel fielsystem, mpfi (multi poiny fuel injection) merupakan fuelsystem paling banyak digunakan pada mobil. selain itu, dari mosaic plot diatas, dapat terlihat bahwa mobil dengan jenis drivewheel fwd (front drive wheel) dengan fuelsystem 2bbl (2 barrel) adalah mobil yang paling dari seluruh jenis mobil. dapat disimpulkan bahwa fuelsystem dan drivewheel berpengaruh dalam penjualan dan produksi mobil.  
+
+
+c. Compute the correlation for all attributes. Interpret the statistical findings!
+
+```{r}
+#write your code here
+library(corrplot)
+
+corrplot(cor(carData[sapply(carData, is.numeric)]), type = "lower", tl.cex = 0.75, tl.srt = 60, method = "number")
+```
+
+__Write your explanation here:__
+
+correlationplot diatas, memperlihatkan bahwa semakin angka mendekati 1 maka korelasi antara 2 variabel semakin kuat korelasinya. bila angkanya negatif, maka korelasi antar variablenya akan berbanding terbalik.
+
+untuk membuat correlationplot saya membutuhkan variabel numerik. dan pada data set, terdapat 8 variabel yang merupakan variabel numerik yaitu carID, symboling, carlength, carwidth, enginesize, horsepower, peakrpm, dan price. pada plot diatas menunjukan korelasi positif terbesar adalah korelasi antara variabel price dan enginesize yaitu 0,87. sedangkan korelasi positif paling kecil adalag korelasi antara carwidth dan carID. kemudian, korelasi negatif paling besar terlihat pada variabel carlength dan symboling. dan korelasi negatif paling kecil terlihat antara variabel horsepower dan carID.
+
+
+
+
+##### **2. You need to compare three ways (three-sigma edit rule, Hampel identifier, boxplot rule) of detecting univariate outliers for the peakrpm attribute from the data frame: (20 pts.)**
+
+a. Generate a plot for each technique and give the appropriate features (labels, line type, etc.). Based on these plots, which outlier detector seems to be giving the more reasonable results?
+
+```{r}
+
+med = median(carData$peakrpm)
+meann = mean(carData$peakrpm)
+madd = mad(carData$peakrpm)  #median absolute deviation
+stdrdev = sd(carData$peakrpm) #standart deviation
+quantile1 = quantile(carData$peakrpm, na.rm = TRUE, probs = 0.25, names = FALSE)
+quantile3 = quantile(carData$peakrpm, na.rm = TRUE, probs = 0.75, names = FALSE)
+intrquantile = quantile3-quantile1
+
+tsigma_upr = meann + 3*(stdrdev)
+tsigma_lwr= meann - 3*(stdrdev)
+
+hampel_upr = med + 3*(madd)
+hampel_lwr = med - 3*(madd)
+
+bxplt_upr = quantile3 + 1.5*(intrquantile)
+bxplt_lwr = quantile3 - 1.5*(intrquantile)
+
+plot(carData$peakrpm, ylim = c(3000, 7000))
+abline(h=tsigma_upr)
+abline(h=tsigma_lwr)
+abline(h=meann)
+
+plot(carData$peakrpm, ylim = c(3000, 7000))
+abline(h=hampel_upr)
+abline(h=hampel_lwr)
+abline(h=med)
+
+plot(carData$peakrpm, ylim = c(3500, 7500))
+abline(h=bxplt_upr)
+abline(h=bxplt_lwr)
+abline(h=quantile3)
+
+
+
+```
+
+__Write your explanation here:__
+
+Menurut saya,dua metode yaitu hampel dan three-sigma rule sama-sama menghasilkan outliers yang masuk akal bidandingkan boxplot karena jumlah outliers keduanya sama. namun, menurut saya menggunakan metode hample untuk mencari outliers lebih baik. hal ini karena metode hampel ini paling sensitif diantara ketiga metode, selain itu metode hampel ini persebaran datanya juga cukup merata dan tidak mudah terpengaruh dengan outliers karena menggunakan median dan MAD.
+
+
+b. How many data points are declared outliers by each of the technique? Based on this data points, which outlier detector seems to be giving the more reasonable results?
+
+```{r}
+#write your code here
+print("outliers by three-sigma rule technique : ")
+sum(abs(carData$peakrpm-mean)> 3 *stdrdev)  #three-sigma
+
+print("outliers by hampel technique : ")
+sum(abs(carData$peakrpm-med)> 3 *madd)#hampel
+
+box_up = sum(abs(quantile3 +1.5*intrquantile)< carData$peakrpm)
+box_lwr = sum(abs(quantile1 +1.5*intrquantile)> carData$peakrpm)
+sumboxplt = box_lwr+box_up
+print("outliers by boxplot technique : ")
+print(sumboxplt)
+
+```
+
+__Write your explanation here:__
+
+diatas menunjukan hasil deteksi outliers menggunakan metode three-sigma dan hampel sama yaitu terdapat 2 data outliers. sedangkan dengan metode boxplot, menghasilkan 193 data outliers. maka, dapat disimpulkan bahwa metode three-sigma dan hampel sama-sama menghasilkan data outliers yang lebih masuk akal.
+
+
+##### **3. Do a comprehensive EDA on your dataset then find the best-fit linear regression model then answer the following questions: (40 pts.)**
+
+a. Interpret the result of your model.
+
+```{r}
+#write your code here
+lmprice = lm(price~enginesize , data=carData)
+summary(lmprice)
+
+
+```
+
+__Write your explanation here:__
+
+untuk membuat model, disini saya menggunakan variabel anginesize yang akan dibandingkan dengan variabel price. pada model yang saya buat, terlihat bahwa enginesize signifikan terhadap price. hal ini terlihat dari jumlah bintang dan p-valuenya. semakin besar p-valuenya maka semakin tidak signifikan pengaruhnya. selain itu nilai R-squared dan adjusted R-squared yang didapatkan mendekati 1, hal ini menunjukan bahwa data model yang dibuat cukup sesuai dengan datanya.
+
+b. Write down the equation of the best fitting line.
+
+```{r}
+#write your code here
+
+intercept = coef(lmprice)[1]
+eginesize = coef(lmprice)[2]
+
+pp1 = intercept + eginesize*carData$enginesize[1] 
+
+pp2 = intercept + eginesize*carData$enginesize[6] 
+
+pp3 = intercept + eginesize*carData$enginesize[17] 
+
+print(pp1)
+print(carData$price[1])
+
+print(pp2)
+print(carData$price[6])
+
+print(pp3)
+print(carData$price[17])
+
+```
+
+__Write your explanation here:__
+saya membuat prediksi harga dengan menggunakan variabel enginesize untuk mengetahui apakah ada pengaruh variabel-variabel yang ada terhadap pembentukan harga mobil dan untuk mengecek apakah prediksi harga ini punya kemiripan dengan harga aslinya pada data set. dapat terlihat bahwa prediksi pertama dan kedua lumayan mendekati harga asli pada data set, sedangkan prediksi ketiga cukup jauh dari harga aslinya.
+
+
+
+c. Is your model good? Why or why not?
+
+
+__Write your explanation here:__
+menurut saya, model yang sudah saya buat cukup bagus. meskipun terdapat beberapa data dengan selisih harga yang cukup jauh, namun hasil prediksi harga pada model lebih banyak yang selisihnya tidak signifikan dengan harga asli pada data set (harga prediksi dan harga asli tidak jauh berbeda). terdapat selisih harga yang cukup signifikan karena harga jual mobil pasti tidak hanya dipengaruhi oleh variabel-variabel yang ada pada data set. pasti terdapat faktor lain yang memperngaruhi harga mobil contohnya brand, jumlah mobil yang di produksi, fitur-fitur yang ada di dalam mobil, dll. karena biasanya semakin terkenal brandnya maka semakin mahal mobilnya, semakin langka mobilnya maka harganya semakin tinggi, semakin canggih fitur-fiturnya maka semakin mahal.
+
+
+
+d. Based on your answer in c, will you deploy the model? Why or why not?
+
+
+__Write your explanation here:__
+
+iya, karena prediksi harga pada model yang saya buat mencakup variabel-variabel utama yang mempengaruhi harga suatu mobil. dan dari model tersebut, prediksi harga yang dihasilkan cukup dekat dengan harga aslinya dan masih masuk akal.
+
+
